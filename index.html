@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ZCA 中誠藝術拍賣 — 互動原型</title>
 <style>
   :root{
@@ -15,20 +16,29 @@
   .stage{max-width:1180px;margin:0 auto;padding:28px 16px 60px;}
   .browser{background:var(--paper);border-radius:10px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45);}
   .browser-bar{background:#EDEAE2;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);}
-  .dot{width:10px;height:10px;border-radius:50%;}
+  .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;}
   .dot.r{background:#E5605A;} .dot.y{background:#E7B84B;} .dot.g{background:#59C168;}
-  .addr{flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--muted);font-family:monospace;}
-  .screen{position:relative;min-height:680px;background:var(--cream);}
+  .addr{flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .devtoggle{display:flex;gap:4px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px;flex:0 0 auto;}
+  .devtoggle button{border:none;background:transparent;font-size:14px;padding:4px 8px;border-radius:4px;cursor:pointer;color:var(--muted);line-height:1;}
+  .devtoggle button.on{background:var(--black);color:#F2ECE1;}
+  .screen{position:relative;min-height:680px;background:var(--cream);transition:max-width .25s ease;margin:0 auto;}
+  .screen.mobile{max-width:390px;border-left:1px solid var(--line);border-right:1px solid var(--line);}
 
-  .hint{position:absolute;top:14px;right:14px;background:var(--black);color:#F2ECE1;font-size:11.5px;padding:8px 14px;border-radius:20px;z-index:50;opacity:.92;pointer-events:none;}
+  .hint{position:absolute;top:14px;right:14px;background:var(--black);color:#F2ECE1;font-size:11.5px;padding:8px 14px;border-radius:20px;z-index:50;opacity:.92;pointer-events:none;max-width:220px;}
 
   /* ---- nav ---- */
-  nav.site{background:var(--black);display:flex;align-items:center;justify-content:space-between;padding:14px 32px;}
+  nav.site{background:var(--black);display:flex;align-items:center;justify-content:space-between;padding:14px 32px;position:relative;}
   nav.site .logo{color:#F2ECE1;font-weight:700;letter-spacing:2px;font-size:17px;cursor:pointer;}
   nav.site .links{display:flex;gap:28px;}
   nav.site .links a{color:#CFC7BA;font-size:13px;text-decoration:none;cursor:pointer;transition:color .15s;}
   nav.site .links a:hover, nav.site .links a.active{color:var(--gold);}
-  nav.site .cta{background:var(--red);color:#F2ECE1;font-size:12.5px;padding:8px 16px;border-radius:3px;border:none;cursor:pointer;}
+  nav.site .cta{background:var(--red);color:#F2ECE1;font-size:12.5px;padding:8px 16px;border-radius:3px;border:none;cursor:pointer;white-space:nowrap;}
+  .burger{display:none;background:none;border:none;color:#F2ECE1;font-size:22px;cursor:pointer;padding:2px 4px;line-height:1;}
+  .mobile-menu{display:none;flex-direction:column;background:var(--black);position:absolute;top:100%;left:0;right:0;padding:6px 24px 18px;z-index:60;border-top:1px solid #2a241d;}
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{color:#CFC7BA;font-size:14px;text-decoration:none;padding:12px 0;border-bottom:1px solid #241f19;cursor:pointer;}
+  .mobile-menu a:last-child{border-bottom:none;}
 
   .view{display:none;}
   .view.active{display:block;}
@@ -38,7 +48,7 @@
   .hero-kicker{color:var(--gold);font-size:11px;letter-spacing:3px;margin-bottom:10px;}
   .hero h1{color:#F2ECE1;font-size:36px;margin:0 0 12px;font-weight:700;max-width:520px;line-height:1.3;}
   .hero p{color:#CFC7BA;font-size:14px;max-width:440px;line-height:1.7;margin:0 0 22px;}
-  .hero .btnrow{display:flex;gap:12px;}
+  .hero .btnrow{display:flex;gap:12px;flex-wrap:wrap;}
   .btn{border:none;cursor:pointer;font-size:13px;padding:11px 22px;border-radius:3px;font-weight:600;}
   .btn.primary{background:var(--red);color:#F2ECE1;}
   .btn.ghost{background:transparent;color:#F2ECE1;border:1px solid #4a433a;}
@@ -48,7 +58,7 @@
   .section{padding:40px 40px;}
   .section h2{font-size:20px;color:var(--ink);margin:0 0 4px;}
   .section .sub{font-size:12.5px;color:var(--muted);margin:0 0 22px;}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;}
   .lot-card{background:var(--paper);border:1px solid var(--line);border-radius:6px;overflow:hidden;cursor:pointer;transition:transform .15s, box-shadow .15s;}
   .lot-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.12);}
   .lot-art{height:130px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:11px;letter-spacing:1px;}
@@ -58,20 +68,20 @@
 
   /* ---- catalogue filter bar ---- */
   .filterbar{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
-  .chip{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:6px 14px;font-size:11.5px;color:var(--ink);cursor:pointer;}
+  .chip{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:6px 14px;font-size:11.5px;color:var(--ink);cursor:pointer;white-space:nowrap;}
   .chip.on{background:var(--red);color:#F2ECE1;border-color:var(--red);}
 
   /* ---- lot detail ---- */
-  .detail-wrap{display:flex;gap:36px;padding:40px;}
-  .detail-art{flex:1;min-height:420px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:13px;}
-  .detail-info{flex:1;max-width:400px;}
+  .detail-wrap{display:flex;gap:36px;padding:40px;flex-wrap:wrap;}
+  .detail-art{flex:1 1 320px;min-height:420px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85);font-size:13px;}
+  .detail-info{flex:1 1 320px;max-width:400px;}
   .detail-info .lotno{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;}
   .detail-info h2{font-size:22px;margin:0 0 6px;color:var(--ink);}
   .detail-info .artist{font-size:13px;color:var(--muted);margin-bottom:20px;}
   .bidbox{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:20px;}
-  .bidbox .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .bidbox .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px;gap:10px;}
   .bidbox .cur{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:14px;}
-  .countdown{display:flex;gap:8px;margin:16px 0;}
+  .countdown{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap;}
   .countdown .box{background:var(--black);color:#F2ECE1;border-radius:4px;padding:8px 10px;font-size:16px;font-weight:700;min-width:44px;text-align:center;}
   .countdown .lbl{font-size:9px;color:var(--muted);text-align:center;margin-top:3px;}
   .meta-list{font-size:12px;color:var(--muted);line-height:2;}
@@ -80,22 +90,23 @@
   .form-wrap{max-width:520px;margin:0 auto;padding:40px;}
   .field{margin-bottom:16px;}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
-  .field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--paper);color:var(--ink);font-family:inherit;}
+  .field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:4px;font-size:16px;background:var(--paper);color:var(--ink);font-family:inherit;}
   .field-row{display:flex;gap:12px;}
-  .field-row .field{flex:1;}
+  .field-row .field{flex:1;min-width:0;}
 
   /* ---- records table ---- */
-  table.records{width:100%;border-collapse:collapse;}
-  table.records th{text-align:left;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 12px;font-weight:600;}
-  table.records td{padding:12px;font-size:12.5px;color:var(--ink);border-bottom:1px solid var(--line);}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table.records{width:100%;border-collapse:collapse;min-width:560px;}
+  table.records th{text-align:left;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line);padding:10px 12px;font-weight:600;white-space:nowrap;}
+  table.records td{padding:12px;font-size:12.5px;color:var(--ink);border-bottom:1px solid var(--line);white-space:nowrap;}
   table.records tr:hover td{background:#F3EEE3;}
   .tag-sold{background:#E8F1EC;color:#2E6B4E;font-size:10px;padding:3px 8px;border-radius:10px;}
 
   /* ---- toast / modal ---- */
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(100px);background:var(--black);color:#F2ECE1;padding:12px 22px;border-radius:6px;font-size:13px;opacity:0;transition:all .3s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(100px);background:var(--black);color:#F2ECE1;padding:12px 22px;border-radius:6px;font-size:13px;opacity:0;transition:all .3s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:86vw;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  .foot{background:var(--black);color:#8a8375;font-size:11px;padding:26px 40px;display:flex;justify-content:space-between;}
+  .foot{background:var(--black);color:#8a8375;font-size:11px;padding:26px 40px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 
   .art-1{background:linear-gradient(135deg,#7a1e1e,#2a0f10);}
   .art-2{background:linear-gradient(135deg,#3a4a3f,#12201a);}
@@ -105,6 +116,36 @@
   .art-6{background:linear-gradient(135deg,#8a5a2a,#2a1a0d);}
   .art-7{background:linear-gradient(135deg,#2a5c52,#0d221d);}
   .art-8{background:linear-gradient(135deg,#5c2a3a,#220d15);}
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width: 860px){
+    .stage{padding:14px 0 30px;}
+    .browser{border-radius:0;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;}
+    .hero{padding:44px 22px;}
+    .hero h1{font-size:26px;}
+    .section{padding:28px 22px;}
+    .detail-wrap{padding:22px;gap:22px;}
+    .detail-art{min-height:260px;}
+  }
+  @media (max-width: 700px){
+    nav.site{padding:12px 18px;}
+    nav.site .links{display:none;}
+    .burger{display:block;}
+    .field-row{flex-direction:column;gap:0;}
+    .foot{padding:20px 22px;flex-direction:column;gap:6px;}
+  }
+  @media (max-width: 480px){
+    .hero h1{font-size:22px;}
+    .hero p{font-size:13px;}
+    .btn{padding:10px 16px;font-size:12.5px;}
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .lot-art{height:100px;}
+    .form-wrap{padding:26px 20px;}
+    .bidbox .cur{font-size:20px;}
+    .countdown .box{min-width:38px;padding:7px 8px;font-size:14px;}
+    nav.site .cta{padding:7px 12px;font-size:11.5px;}
+  }
 </style>
 </head>
 <body>
@@ -113,9 +154,13 @@
     <div class="browser-bar">
       <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
       <div class="addr" id="addr">zhongcheng-auction.com/</div>
+      <div class="devtoggle" aria-label="預覽裝置切換">
+        <button id="btn-desktop" class="on" onclick="setDevice('desktop')" title="桌機預覽">🖥</button>
+        <button id="btn-mobile" onclick="setDevice('mobile')" title="手機預覽">📱</button>
+      </div>
     </div>
     <div class="screen" id="screen">
-      <div class="hint" id="hint">互動原型 · 點擊導覽列或卡片切換頁面</div>
+      <div class="hint" id="hint">互動原型 · 點擊導覽列或卡片切換頁面（右上角可切換手機／桌機預覽）</div>
 
       <!-- NAV -->
       <nav class="site">
@@ -127,7 +172,15 @@
           <a onclick="go('records')" data-nav="records">歷年競賣紀錄</a>
           <a onclick="go('member')" data-nav="member">會員專區</a>
         </div>
+        <button class="burger" onclick="toggleMenu()" aria-label="開啟選單">☰</button>
         <button class="cta" onclick="go('member')">申請會員</button>
+        <div class="mobile-menu" id="mobileMenu">
+          <a onclick="go('home')">首頁</a>
+          <a onclick="go('catalogue')">線上圖錄</a>
+          <a onclick="go('live')">線上拍賣會</a>
+          <a onclick="go('records')">歷年競賣紀錄</a>
+          <a onclick="go('member')">會員專區</a>
+        </div>
       </nav>
 
       <!-- HOME -->
@@ -240,10 +293,12 @@
         <div class="section">
           <h2>歷年競賣紀錄</h2>
           <div class="sub">Auction Records — 依作品分類、年份查詢已成交拍品，回應藏家真偽與行情查證需求</div>
+          <div class="table-scroll">
           <table class="records">
             <thead><tr><th>LOT</th><th>作品</th><th>藝術家</th><th>拍賣場次</th><th>成交價</th><th>狀態</th></tr></thead>
             <tbody id="records-body"></tbody>
           </table>
+          </div>
         </div>
       </div>
 
@@ -310,6 +365,8 @@ function go(name){
   if(navEl) navEl.classList.add('active');
   document.getElementById('addr').textContent = addrMap[name] || addrMap.home;
   document.getElementById('screen').scrollTop = 0;
+  window.scrollTo({top: document.querySelector('.browser').offsetTop - 8, behavior:'smooth'});
+  closeMenu();
   const hint = document.getElementById('hint');
   if(hint){ hint.style.opacity='0.92'; clearTimeout(window._hintT); window._hintT=setTimeout(()=>hint.style.opacity='0',2200); }
 }
@@ -336,6 +393,26 @@ function toast(msg){
   t.classList.add('show');
   clearTimeout(window._toastT);
   window._toastT = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+function closeMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+}
+
+function setDevice(mode){
+  const screen = document.getElementById('screen');
+  const dt = document.getElementById('btn-desktop');
+  const mb = document.getElementById('btn-mobile');
+  if(mode === 'mobile'){
+    screen.classList.add('mobile');
+    mb.classList.add('on'); dt.classList.remove('on');
+  } else {
+    screen.classList.remove('mobile');
+    dt.classList.add('on'); mb.classList.remove('on');
+  }
 }
 
 setTimeout(()=>{ const h=document.getElementById('hint'); if(h) h.style.opacity='0'; }, 3200);
